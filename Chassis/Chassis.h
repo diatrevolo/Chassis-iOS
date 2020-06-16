@@ -15,5 +15,5 @@ FOUNDATION_EXPORT double ChassisVersionNumber;
 FOUNDATION_EXPORT const unsigned char ChassisVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <Chassis/PublicHeader.h>
-
+#import "CheckError.h"
 

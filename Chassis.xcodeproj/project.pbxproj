@@ -3,13 +3,15 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		8D97A802249939B3008A6062 /* Chassis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D97A7F8249939B3008A6062 /* Chassis.framework */; };
 		8D97A807249939B3008A6062 /* ChassisTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D97A806249939B3008A6062 /* ChassisTests.swift */; };
-		8D97A809249939B3008A6062 /* Chassis.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D97A7FB249939B3008A6062 /* Chassis.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8D97A809249939B3008A6062 /* Chassis.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D97A7FB249939B3008A6062 /* Chassis.h */; platformFilter = ios; settings = {ATTRIBUTES = (Public, ); }; };
+		8D97A813249939DC008A6062 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D97A812249939DC008A6062 /* AudioEngine.swift */; };
+		8D97A81724993AC8008A6062 /* CheckError.h in Headers */ = {isa = PBXBuildFile; fileRef = 8D97A81624993A44008A6062 /* CheckError.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -29,6 +31,8 @@
 		8D97A801249939B3008A6062 /* ChassisTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChassisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D97A806249939B3008A6062 /* ChassisTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChassisTests.swift; sourceTree = "<group>"; };
 		8D97A808249939B3008A6062 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8D97A812249939DC008A6062 /* AudioEngine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
+		8D97A81624993A44008A6062 /* CheckError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CheckError.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,8 +75,10 @@
 		8D97A7FA249939B3008A6062 /* Chassis */ = {
 			isa = PBXGroup;
 			children = (
+				8D97A812249939DC008A6062 /* AudioEngine.swift */,
 				8D97A7FB249939B3008A6062 /* Chassis.h */,
 				8D97A7FC249939B3008A6062 /* Info.plist */,
+				8D97A81624993A44008A6062 /* CheckError.h */,
 			);
 			path = Chassis;
 			sourceTree = "<group>";
@@ -94,6 +100,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D97A809249939B3008A6062 /* Chassis.h in Headers */,
+				8D97A81724993AC8008A6062 /* CheckError.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,6 +155,7 @@
 				TargetAttributes = {
 					8D97A7F7249939B3008A6062 = {
 						CreatedOnToolsVersion = 11.5;
+						LastSwiftMigration = 1150;
 					};
 					8D97A800249939B3008A6062 = {
 						CreatedOnToolsVersion = 11.5;
@@ -195,6 +203,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8D97A813249939DC008A6062 /* AudioEngine.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,10 +277,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -325,9 +334,10 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -340,6 +350,7 @@
 		8D97A80D249939B3008A6062 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -352,9 +363,12 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rawbirdtoe.Chassis;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -363,6 +377,7 @@
 		8D97A80E249939B3008A6062 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -375,9 +390,11 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.rawbirdtoe.Chassis;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -386,6 +403,7 @@
 		8D97A810249939B3008A6062 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = ChassisTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -403,6 +421,7 @@
 		8D97A811249939B3008A6062 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = ChassisTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
