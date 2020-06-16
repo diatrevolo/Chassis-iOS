@@ -18,7 +18,7 @@ Chassis attempts to abstract this away as well by providing a single `startRecor
 ![Chassis Recording](images/Chassis_recording.png)
 
 To create an instance of Chassis' engine, simply instantiate AudioEngine.
-```
+```swift
 import Chassis
 
 ...
@@ -28,7 +28,7 @@ private var engine: AudioEngine = AudioEngine()
 
 To add a file to a mix, create a `Track` object, and call `loadAllTracksAndAddToMix`.
 
-```
+```swift
 import Chassis
 
 ...
