@@ -44,8 +44,8 @@ Having said that, its main purpose is to facilitate the entry-point to multi-tra
 
 Chassis relies on Combine, so I have decided to make it iOS 13 +. 
 
-I'll soon be updating this file with a (long!) list of issues I'd like to address...collaborators are welcome!
+I have begun updating Issues with a list of issues I'd like to address...collaborators are welcome! There will be many more issues to come; Chassis was ripped out of an ongoing project and packaged up, so a lot of the missing features just haven't been necessary up to now.
 
-I will also be updating this readme with notes about how Chassis is written, and some of its shortcomings.
+I will also be continuing to update this readme with notes about how Chassis is written, and some of its shortcomings.
 
-Until I can do that, please feel free to write me directly at rawbirdtoe --(at)-- g mail dot com.
+If something is a mystery, or missing, or confusing, please feel free to write me directly at rawbirdtoe --(at)-- g mail dot com. This is a labor of love to try to make multi-track audio more accessible, but I am fully aware that in its current state it only serves a very narrow set of requirements. I promise not to give up or abandon it, so please add any issues or feature requests!
