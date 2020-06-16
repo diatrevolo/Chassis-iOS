@@ -1,1 +1,2 @@
-Please use swiftlint in its default setting to check your code.
+- Please use swiftlint in its default setting to check your code.
+- All code should be written using the Ray Wenderlich Swift Style Guide, found [here](https://github.com/raywenderlich/swift-style-guide).
