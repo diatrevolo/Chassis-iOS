@@ -67,11 +67,17 @@ public class AudioEngine: EngineConnectable {
     private var isRecording: Bool = false
     private var sinkNode: AVAudioSinkNode?
 
+    /**
+    Allocates and initalizes the audio engine
+    */
     public init() {
         setUpEngine()
         setUpDisplayLink()
     }
 
+    /**
+    Sets up AVAudioEngine
+    */
     private func setUpEngine() {
         DispatchQueue.global(qos: .userInitiated).async {
             try? AVAudioSession.sharedInstance()
@@ -99,6 +105,17 @@ public class AudioEngine: EngineConnectable {
         }
     }
 
+    /**
+    Loads an AVAudioFile into AVAudioEngine.
+
+    - Parameter file: an AVAudioFile
+     
+    - Parameter time: an AVAudioTime interval, or nil for time zero
+
+    - Returns: nothing
+     
+    - This method loads an AVAudioFile into the mix at the specified mix time.
+    */
     public func addToMix(file: AVAudioFile, at time: AVAudioTime? = nil) {
         DispatchQueue.global(qos: .userInitiated).sync {
             let node = AVAudioPlayerNode()
@@ -109,12 +126,25 @@ public class AudioEngine: EngineConnectable {
         }
     }
 
+    /**
+    Removes an AVAudioNode.
+
+    - Parameter node: an AVAudioPlayerNode
+     
+    - Returns: nothing
+     
+    - This method removes a node from the mix.
+    */
     public func removeFromMix(node: AVAudioPlayerNode) {
         DispatchQueue.global(qos: .background).async {
             self.engine.disconnectNodeInput(node)
         }
     }
 
+    /**
+    Plays the mix.
+    - This method plays the current mix. It is relative to the last time played, unless stop has been called.
+    */
     public func play() {
         DispatchQueue.global(qos: .userInitiated).async {
             guard let updater = self.updater else { return }
@@ -137,6 +167,10 @@ public class AudioEngine: EngineConnectable {
         }
     }
 
+    /**
+    Pauses the mix
+    - This method pauses the mix and preserves the current mix time.
+    */
     public func pause() {
         DispatchQueue.global(qos: .userInitiated).async {
             guard let updater = self.updater else { return }
@@ -148,6 +182,10 @@ public class AudioEngine: EngineConnectable {
         }
     }
 
+    /**
+    Stops the mix
+    - This method stops the mix and resets mix time to zero.
+    */
     public func stop() {
         DispatchQueue.global(qos: .userInitiated).sync {
             guard let updater = self.updater else { return }
@@ -233,6 +271,13 @@ public class AudioEngine: EngineConnectable {
         }
     }
 
+    /**
+    Unloads a track.
+
+    - Parameter node: the AVAudioPlayerNode in question.
+
+    - This method unloads a track from the mix.
+    */
     public func unloadTrack(node: AVAudioPlayerNode) {
         DispatchQueue.global(qos: .utility).sync {
             engine.detach(node)
@@ -242,6 +287,10 @@ public class AudioEngine: EngineConnectable {
         }
     }
 
+    /**
+    Unloads all tracks.
+    - This method unloads all tracks from the mix.
+    */
     public func unloadAllTracks() {
         nodes.forEach {
             unloadTrack(node: $0)
@@ -261,6 +310,13 @@ public class AudioEngine: EngineConnectable {
         return maxDuration
     }
 
+    /**
+    Gets current mix playhead position
+
+    - Returns: the AVAudioFramePosition of the playhead.
+
+    - This method unloads a track from the mix.
+    */
     public func getCurrentPosition() -> AVAudioFramePosition {
         guard let player = nodes.first,
             let nodeTime = player.lastRenderTime,
@@ -268,11 +324,27 @@ public class AudioEngine: EngineConnectable {
         return playerTime.sampleTime
     }
 
+    /**
+    Returns the length of a tracks
+
+    - Parameter filename: filename of the track.
+
+    - Returns: Double
+     
+    - This method returns the length of a track.
+    */
     public func getLength(for filename: String?) -> Double {
         guard let filename = filename else { return 0 }
         return durationTable[filename] ?? 0
     }
 
+    /**
+    Loads array of tracks into AVAudioEngine.
+
+    - Returns: Filename if recording track in documents directory
+     
+    - This method starts recording.
+    */
     public func startRecording() -> String? {
         guard let recordNode = recordNode else { return nil }
         let format = recordNode.outputFormat(forBus: 0)
@@ -320,6 +392,10 @@ public class AudioEngine: EngineConnectable {
         return filename
     }
 
+    /**
+    Stops recording
+    - This method stops recording.
+    */
     public func stopRecording() {
         guard let sinkNode = sinkNode else { return }
         engine.stop()
@@ -329,6 +405,15 @@ public class AudioEngine: EngineConnectable {
         engine.reset()
     }
 
+    /**
+    Bounces current mix
+
+    - Parameter filename: filename to bounce to in documents directory
+
+    - Returns: URL of mix
+     
+    - This method loads an array of tracks into memory and calculates time offset.
+    */
     // swiftlint:disable function_body_length
     public func bounceScene(filename: String) -> URL? {
         engine.stop()
@@ -386,6 +471,17 @@ public class AudioEngine: EngineConnectable {
         return outputURL
     }
 
+    /**
+    Converts file to AIFF or AAC
+
+    - Parameter filepath: a Track URL
+     
+    - Parameter format: a CommonFormat (see below)
+
+    - Returns: URL to converted file
+     
+    - This method loads an array of tracks into memory and calculates time offset.
+    */
     // swiftlint:disable function_body_length
     // swiftlint:disable cyclomatic_complexity
     public func convertFile(filepath: URL, to format: CommonFormats) -> URL? {
