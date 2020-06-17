@@ -29,8 +29,10 @@ public protocol EngineConnectable: class {
     var progressObserver: AnyPublisher<Double, Never> { get }
     var isPlaying: Bool { get }
 
-    func addToMix(file: AVAudioFile, at time: AVAudioTime?)
-    func removeFromMix(node: AVAudioPlayerNode)
+    func addFileToMix(_ file: AVAudioFile, at time: AVAudioTime?)
+    func addTrackToMix(_ track: Track)
+    func removeNodeFromMix(_ node: AVAudioPlayerNode)
+    func removeTrackFromMix(_ track: Track)
     func play()
     func pause()
     func stop()
@@ -38,10 +40,11 @@ public protocol EngineConnectable: class {
     func skipForward()
     func skipBackward()
     func loadAllTracksAndAddToMix(tracks: [Track])
-    func unloadTrack(node: AVAudioPlayerNode)
+    func unloadNode(_ node: AVAudioPlayerNode)
     func unloadAllTracks()
     func getMixLength() -> TimeInterval
-    func getLength(for filename: String?) -> Double
+    func getFileLength(for filename: String?) -> Double
+    func getTrackLength(for track: Track) -> Double
     func startRecording() -> String?
     func stopRecording()
     func bounceScene(filename: String) -> URL?
@@ -116,14 +119,37 @@ public class AudioEngine: EngineConnectable {
      
     - This method loads an AVAudioFile into the mix at the specified mix time.
     */
-    public func addToMix(file: AVAudioFile, at time: AVAudioTime? = nil) {
-        DispatchQueue.global(qos: .userInitiated).sync {
-            let node = AVAudioPlayerNode()
-            nodes.append(node)
-            engine.attach(node)
-            engine.connect(node, to: engine.mainMixerNode, format: audioFormat)
-            node.scheduleFile(file, at: time)
+    public func addFileToMix(_ file: AVAudioFile, at time: AVAudioTime? = nil) {
+        let node = AVAudioPlayerNode()
+        nodes.append(node)
+        engine.attach(node)
+        engine.connect(node, to: engine.mainMixerNode, format: audioFormat)
+        node.scheduleFile(file, at: time)
+    }
+    
+    /**
+    Loads a Track into AVAudioEngine.
+
+    - Parameter track: a Track
+     
+    - Returns: nothing
+     
+    - This method loads an AVAudioFile into the mix at the specified mix time.
+    */
+    public func addTrackToMix(_ track: Track) {
+        guard let audioFile = try? self.loadTrack(track) else { fatalError("Could not add file to mix.") }
+        durationTable[track.fileURLString] = Double(audioFile.length) / audioFile.processingFormat.sampleRate
+        var audioTime: AVAudioTime?
+        let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+        if let startTime = track.startTime {
+            audioTime = AVAudioTime(sampleTime: Int64(getMixLength() *
+                startTime * sampleRate),
+                                    atRate: sampleRate)
+        } else {
+            audioTime = nil
         }
+        files.append((audioFile, audioTime))
+        addFileToMix(audioFile, at: audioTime)
     }
 
     /**
@@ -135,9 +161,34 @@ public class AudioEngine: EngineConnectable {
      
     - This method removes a node from the mix.
     */
-    public func removeFromMix(node: AVAudioPlayerNode) {
+    public func removeNodeFromMix(_ node: AVAudioPlayerNode) {
         DispatchQueue.global(qos: .background).async {
             self.engine.disconnectNodeInput(node)
+        }
+    }
+
+    /**
+    Removes a Track.
+
+    - Parameter track: a Track
+     
+    - Returns: nothing
+     
+    - This method removes a track from the mix. If two tracks are identical, it will remove them both.
+    */
+    public func removeTrackFromMix(_ track: Track) {
+        guard let file = try? loadTrack(track) else { fatalError("Track is not valid.") }
+        let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+        let audioTime = AVAudioTime(sampleTime: Int64(getMixLength() *
+                                                      (track.startTime ?? 0) * sampleRate),
+                                    atRate: sampleRate)
+        let matchingTracks = files.filter {
+            $0.url == file.url && $1 == audioTime
+        }.enumerated()
+        
+        for trackToRemove in matchingTracks {
+            let nodeToRemove = nodes.remove(at: trackToRemove.offset)
+            self.engine.disconnectNodeInput(nodeToRemove)
         }
     }
 
@@ -267,7 +318,7 @@ public class AudioEngine: EngineConnectable {
 
     private func reloadFiles() {
         files.forEach {
-            addToMix(file: $0.0, at: $0.1)
+            addFileToMix($0.0, at: $0.1)
         }
     }
 
@@ -278,7 +329,7 @@ public class AudioEngine: EngineConnectable {
 
     - This method unloads a track from the mix.
     */
-    public func unloadTrack(node: AVAudioPlayerNode) {
+    public func unloadNode(_ node: AVAudioPlayerNode) {
         DispatchQueue.global(qos: .utility).sync {
             engine.detach(node)
             nodes.removeAll {
@@ -293,7 +344,7 @@ public class AudioEngine: EngineConnectable {
     */
     public func unloadAllTracks() {
         nodes.forEach {
-            unloadTrack(node: $0)
+            unloadNode($0)
         }
     }
 
@@ -325,17 +376,30 @@ public class AudioEngine: EngineConnectable {
     }
 
     /**
-    Returns the length of a tracks
+    Returns the length of a file
 
     - Parameter filename: filename of the track.
 
     - Returns: Double
      
-    - This method returns the length of a track.
+    - This method returns the length of a file.
     */
-    public func getLength(for filename: String?) -> Double {
+    public func getFileLength(for filename: String?) -> Double {
         guard let filename = filename else { return 0 }
         return durationTable[filename] ?? 0
+    }
+
+    /**
+    Returns the length of a track
+
+    - Parameter track: Track.
+
+    - Returns: Double
+     
+    - This method returns the length of a track.
+    */
+    public func getTrackLength(for track: Track) -> Double {
+        return durationTable[track.fileURLString] ?? 0
     }
 
     /**
