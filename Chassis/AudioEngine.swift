@@ -712,16 +712,23 @@ public enum CommonFormats {
 public class Track: NSObject {
     public let fileURLString: String
     public let startTime: Double?
+    public let token: Int?
 
-    public init(urlString: String, startTime: Double? = nil) {
+    public init(urlString: String, startTime: Double? = nil, token: Int? = nil) {
         self.fileURLString = urlString
         self.startTime = startTime
+        self.token = token
     }
 
      public required init?(coder: NSCoder) {
          guard let urlString = coder.decodeObject(forKey: "fileURLString") as? String,
             let startTime = coder.decodeObject(forKey: "startTime") as? Double? else {
                 fatalError()
+        }
+        if let token = coder.decodeObject(forKey: "token") as? Int {
+            self.token = token
+        } else {
+            self.token = nil
         }
         self.fileURLString = urlString
         self.startTime = startTime
@@ -732,5 +739,6 @@ extension Track: NSCoding {
     public func encode(with coder: NSCoder) {
         coder.encode(self.fileURLString, forKey: "fileURLString")
         coder.encode(self.startTime, forKey: "startTime")
+        coder.encode(self.token, forKey: "token")
     }
 }
