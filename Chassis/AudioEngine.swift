@@ -29,7 +29,7 @@ public protocol EngineConnectable: class {
     var progressObserver: AnyPublisher<Double, Never> { get }
     var isPlaying: Bool { get }
 
-    func addFileToMix(_ file: AVAudioFile, at time: AVAudioTime?, isLegacyTrack: Bool)
+    func addFileToMix(_ file: AVAudioFile, at time: AVAudioTime?, isLegacyTrack: Bool, token: UUID?)
     func addTrackToMix(_ track: Track)
     func removeNodeFromMix(_ node: AVAudioPlayerNode)
     func removeTrackFromMix(_ track: Track)
@@ -64,7 +64,7 @@ public class AudioEngine: EngineConnectable {
     private var engine = AVAudioEngine()
     private var legacyNodes = [AVAudioPlayerNode]()
     private var nodes = [NodeUse]()
-    private var tokenizedFiles: [UUID : (AVAudioFile, AVAudioPlayerNode)] = [:]
+    private var tokenizedFiles: [UUID : (AVAudioFile, AVAudioPlayerNode?)] = [:]
     private var durationTable: [String: Double] = [:]
     private var files: [(AVAudioFile, AVAudioTime?)] = []
     private var audioFormat: AVAudioFormat?
@@ -131,7 +131,7 @@ public class AudioEngine: EngineConnectable {
      
     - This method loads an AVAudioFile into the mix at the specified mix time.
     */
-    public func addFileToMix(_ file: AVAudioFile, at time: AVAudioTime? = nil, isLegacyTrack: Bool = false) {
+    public func addFileToMix(_ file: AVAudioFile, at time: AVAudioTime? = nil, isLegacyTrack: Bool = false, token: UUID? = nil) {
         if isLegacyTrack {
             let node = AVAudioPlayerNode()
             legacyNodes.append(node)
@@ -139,19 +139,22 @@ public class AudioEngine: EngineConnectable {
             engine.connect(node, to: engine.mainMixerNode, format: audioFormat)
             node.scheduleFile(file, at: time)
         } else {
+            guard let token = token else { fatalError() }
             for nodeUse in nodes {
                 if nodeUse.inUse == false {
+                    tokenizedFiles[token] = (file, nodeUse.node)
                     nodeUse.node.scheduleFile(file, at: time)
                     return
                 }
             }
             let node = AVAudioPlayerNode()
+            tokenizedFiles[token] = (file, node)
             nodes.append(NodeUse(node: node))
             node.scheduleFile(file, at: time)
         }
     }
     
-    private func reloadFiles() {
+    private func reloadLegacyFiles() {
         files.forEach {
             addFileToMix($0.0, at: $0.1)
         }
@@ -302,7 +305,7 @@ public class AudioEngine: EngineConnectable {
             engine.stop()
             engine.reset()
             unloadAllTracks()
-            reloadFiles()
+            reloadLegacyFiles()
         }
     }
 
@@ -326,7 +329,17 @@ public class AudioEngine: EngineConnectable {
     private func loadTrack(_ track: Track) throws -> AVAudioFile? {
         if let token = track.token {
             // retrieve AVAudioFile via token
-            return tokenizedFiles[token]?.0
+            if let file = tokenizedFiles[token]?.0 {
+                return file
+            }
+            guard let userDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory,
+                                                                          .userDomainMask, true)
+            .first else { return nil }
+            let documentSearchPathUrl = URL(fileURLWithPath: userDirectory)
+            let filePath = documentSearchPathUrl.appendingPathComponent(track.fileURLString)
+            let file = try AVAudioFile(forReading: filePath)
+            tokenizedFiles[token] = (file, nil)
+            return file
         } else {
             guard let userDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory,
                                                                           .userDomainMask, true)
