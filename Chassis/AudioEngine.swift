@@ -163,7 +163,7 @@ public class AudioEngine: EngineConnectable {
     
     private func reloadLegacyFiles() {
         files.forEach {
-            addFileToMix($0.0, at: $0.1)
+            addFileToMix($0.0, at: $0.1, isLegacyTrack: true)
         }
     }
     
@@ -270,8 +270,11 @@ public class AudioEngine: EngineConnectable {
             if !self.isPlaying {
                 self.isPlaying = true
                 updater.isPaused = false
-                self.legacyNodes.enumerated().forEach {
-                    $0.element.play(at: nil)
+                self.legacyNodes.forEach {
+                    $0.play(at: nil)
+                }
+                self.nodes.forEach {
+                    $0.node.play(at: nil)
                 }
             } else {
                 self.pause()
@@ -291,6 +294,9 @@ public class AudioEngine: EngineConnectable {
             self.legacyNodes.forEach {
                 $0.pause()
             }
+            self.nodes.forEach {
+                $0.node.pause()
+            }
         }
     }
 
@@ -308,6 +314,9 @@ public class AudioEngine: EngineConnectable {
             }
             legacyNodes.forEach {
                 $0.stop()
+            }
+            nodes.forEach {
+                $0.node.stop()
             }
             engine.stop()
             engine.reset()
