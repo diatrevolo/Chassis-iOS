@@ -126,6 +126,10 @@ public class AudioEngine: EngineConnectable {
     - Parameter file: an AVAudioFile
      
     - Parameter time: an AVAudioTime interval, or nil for time zero
+     
+     - Parameter isLegacyTrack: Bool used if attached file is for legacy version
+     
+     - Parameter token: if file is not legacy, the file's associated track's token UUID
 
     - Returns: nothing
      
