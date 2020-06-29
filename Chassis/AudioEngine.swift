@@ -143,6 +143,7 @@ public class AudioEngine: EngineConnectable {
             for nodeUse in nodes {
                 if nodeUse.inUse == false {
                     tokenizedFiles[token] = (file, nodeUse.node)
+                    engine.connect(nodeUse.node, to: engine.mainMixerNode, format: audioFormat)
                     nodeUse.node.scheduleFile(file, at: time)
                     return
                 }
@@ -150,6 +151,8 @@ public class AudioEngine: EngineConnectable {
             let node = AVAudioPlayerNode()
             tokenizedFiles[token] = (file, node)
             nodes.append(NodeUse(node: node))
+            engine.attach(node)
+            engine.connect(node, to: engine.mainMixerNode, format: audioFormat)
             node.scheduleFile(file, at: time)
         }
     }
