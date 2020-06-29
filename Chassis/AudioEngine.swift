@@ -188,9 +188,9 @@ public class AudioEngine: EngineConnectable {
         } else {
             audioTime = nil
         }
-        if track.token != nil {
+        if let token = track.token {
             // Add tokenized track here
-            addFileToMix(audioFile, at: audioTime)
+            addFileToMix(audioFile, at: audioTime, token: token)
         } else {
             files.append((audioFile, audioTime))
             addFileToMix(audioFile, at: audioTime, isLegacyTrack: true)
