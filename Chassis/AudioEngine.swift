@@ -386,7 +386,7 @@ public class AudioEngine: EngineConnectable {
                 }
                 if let track = try? self.loadTrack($0) {
                     if let token = $0.token {
-                        addFileToMix(track, at: audioTime)
+                        addFileToMix(track, at: audioTime, token: token)
                     } else {
                         files.append((track, audioTime))
                         addFileToMix(track, at: audioTime, isLegacyTrack: true)
