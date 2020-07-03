@@ -360,7 +360,9 @@ public class AudioEngine: EngineConnectable {
                 $0.stop()
             }
             nodes.forEach {
-                $0.node.stop()
+                if $0.inUse {
+                    $0.node.stop()
+                }
             }
             engine.stop()
             engine.reset()
@@ -513,11 +515,11 @@ public class AudioEngine: EngineConnectable {
     - This method gets the current playhead position.
     */
     public func getCurrentPosition() -> AVAudioFramePosition {
-        if let player = nodes.first(where: {
+        if let nodeUse = nodes.first(where: {
             $0.inUse == true
-        })?.node,
-            let nodeTime = player.lastRenderTime,
-            let playerTime = player.playerTime(forNodeTime: nodeTime) {
+        }),
+            let nodeTime = nodeUse.node.lastRenderTime,
+            let playerTime = nodeUse.node.playerTime(forNodeTime: nodeTime) {
             return playerTime.sampleTime
         }
         else if let player = legacyNodes.first,
