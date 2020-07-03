@@ -249,7 +249,7 @@ public class AudioEngine: EngineConnectable {
     */
     public func removeNodeFromMix(_ node: AVAudioPlayerNode) {
         DispatchQueue.global(qos: .background).async {
-            self.engine.disconnectNodeInput(node)
+            self.engine.disconnectNodeOutput(node)
         }
     }
 
@@ -267,7 +267,7 @@ public class AudioEngine: EngineConnectable {
             // remove track via token
             let fileInfo = tokenizedFiles[token]
             if let node = fileInfo?.node {
-                engine.disconnectNodeInput(node)
+                engine.disconnectNodeOutput(node)
                 let nodeRef = nodes.first {
                     $0.node == node
                 }
@@ -276,6 +276,7 @@ public class AudioEngine: EngineConnectable {
                 }
             }
             tokenizedFiles[token] = nil
+            tokenizedFiles.removeValue(forKey: token)
         } else {
             guard let file = try? loadTrack(track) else { fatalError("Track is not valid.") }
             let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
@@ -289,7 +290,7 @@ public class AudioEngine: EngineConnectable {
             
             for trackToRemove in matchingTracks {
                 let nodeToRemove = legacyNodes.remove(at: trackToRemove.offset)
-                self.engine.disconnectNodeInput(nodeToRemove)
+                self.engine.disconnectNodeOutput(nodeToRemove)
             }
         }
     }
@@ -315,7 +316,9 @@ public class AudioEngine: EngineConnectable {
                     $0.play(at: nil)
                 }
                 self.nodes.forEach {
-                    $0.node.play(at: nil)
+                    if $0.inUse {
+                        $0.node.play(at: nil)
+                    }
                 }
             } else {
                 self.pause()
