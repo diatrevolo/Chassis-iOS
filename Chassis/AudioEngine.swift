@@ -336,7 +336,9 @@ public class AudioEngine: EngineConnectable {
                 $0.pause()
             }
             self.nodes.forEach {
-                $0.node.pause()
+                if $0.inUse {
+                    $0.node.pause()
+                }
             }
         }
     }
