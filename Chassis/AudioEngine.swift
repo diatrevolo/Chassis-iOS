@@ -513,7 +513,9 @@ public class AudioEngine: EngineConnectable {
     - This method gets the current playhead position.
     */
     public func getCurrentPosition() -> AVAudioFramePosition {
-        if let player = nodes.first?.node,
+        if let player = nodes.first(where: {
+            $0.inUse == true
+        })?.node,
             let nodeTime = player.lastRenderTime,
             let playerTime = player.playerTime(forNodeTime: nodeTime) {
             return playerTime.sampleTime
