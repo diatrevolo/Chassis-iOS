@@ -163,12 +163,10 @@ public class AudioEngine: EngineConnectable {
             guard let token = token else { fatalError() }
             for nodeUse in nodes {
                 if nodeUse.inUse == false {
+                    nodeUse.inUse = true
                     tokenizedFiles[token] = FileInfo(file: file,
                                                      node: nodeUse.node,
                                                      startTime: time)
-                    engine.connect(nodeUse.node,
-                                   to: engine.mainMixerNode,
-                                   format: audioFormat)
                     nodeUse.node.scheduleFile(file,
                                               at: time)
                     return
@@ -267,7 +265,6 @@ public class AudioEngine: EngineConnectable {
             // remove track via token
             let fileInfo = tokenizedFiles[token]
             if let node = fileInfo?.node {
-                engine.disconnectNodeOutput(node)
                 let nodeRef = nodes.first {
                     $0.node == node
                 }
