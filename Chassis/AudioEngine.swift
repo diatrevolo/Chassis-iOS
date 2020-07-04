@@ -133,6 +133,29 @@ public class AudioEngine: EngineConnectable {
             stop()
         }
     }
+    
+    /**
+    Gets current mix playhead position
+
+    - Returns: the AVAudioFramePosition of the playhead.
+
+    - This method gets the current playhead position.
+    */
+    public func getCurrentPosition() -> AVAudioFramePosition {
+        if let nodeUse = nodes.first(where: {
+            $0.inUse == true
+        }),
+            let nodeTime = nodeUse.node.lastRenderTime,
+            let playerTime = nodeUse.node.playerTime(forNodeTime: nodeTime) {
+            return playerTime.sampleTime
+        }
+        else if let player = legacyNodes.first,
+            let nodeTime = player.lastRenderTime,
+            let playerTime = player.playerTime(forNodeTime: nodeTime) {
+            return playerTime.sampleTime
+        }
+        return 0
+    }
 
     /**
     Loads an AVAudioFile into AVAudioEngine.
@@ -270,6 +293,7 @@ public class AudioEngine: EngineConnectable {
                 }
                 if let nodeRef = nodeRef {
                     nodeRef.inUse = false
+                    nodeRef.node.reset()
                 }
             }
             tokenizedFiles[token] = nil
@@ -504,29 +528,6 @@ public class AudioEngine: EngineConnectable {
             maxDuration = max(maxDuration, duration)
         }
         return maxDuration
-    }
-
-    /**
-    Gets current mix playhead position
-
-    - Returns: the AVAudioFramePosition of the playhead.
-
-    - This method gets the current playhead position.
-    */
-    public func getCurrentPosition() -> AVAudioFramePosition {
-        if let nodeUse = nodes.first(where: {
-            $0.inUse == true
-        }),
-            let nodeTime = nodeUse.node.lastRenderTime,
-            let playerTime = nodeUse.node.playerTime(forNodeTime: nodeTime) {
-            return playerTime.sampleTime
-        }
-        else if let player = legacyNodes.first,
-            let nodeTime = player.lastRenderTime,
-            let playerTime = player.playerTime(forNodeTime: nodeTime) {
-            return playerTime.sampleTime
-        }
-        return 0
     }
 
     /**
