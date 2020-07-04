@@ -293,6 +293,7 @@ public class AudioEngine: EngineConnectable {
                 }
                 if let nodeRef = nodeRef {
                     nodeRef.inUse = false
+                    nodeRef.node.stop()
                     nodeRef.node.reset()
                 }
             }
@@ -321,6 +322,7 @@ public class AudioEngine: EngineConnectable {
     - This method plays the current mix. It is relative to the last time played, unless stop has been called.
     */
     public func play() {
+        guard (!self.legacyNodes.isEmpty || !self.tokenizedFiles.isEmpty) else { return }
         DispatchQueue.global(qos: .userInitiated).async {
             guard let updater = self.updater else { return }
             if !self.engine.isRunning {
