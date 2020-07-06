@@ -755,20 +755,28 @@ public class AudioEngine: EngineConnectable {
                 return nil
             }
 
+            var infoSize: UInt32 = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
+            
+            if CheckError(AudioFileGetProperty(inputFile!, kAudioFilePropertyBitRate, &infoSize, &inputFormat.mBitsPerChannel), "AudioFileGetProperty failed") != noErr {
+                return nil
+            }
+            print("BitRate: \(inputFormat.mBitsPerChannel)")
+            
+//            inputFormat.mFormatID = info
+//            inputFormat.mSampleRate = outputFormat.mSampleRate
+//            inputFormat.mFormatFlags = kAudioFormatFlagIsPacked |
+//                kAudioFormatFlagIsSignedInteger |
+//                kAudioFormatFlagIsBigEndian
+//            inputFormat.mBitsPerChannel = UInt32(8 * MemoryLayout<Int16>.size)
+//            inputFormat.mChannelsPerFrame = outputFormat.mChannelsPerFrame
+//            inputFormat.mBytesPerPacket = inputFormat.mChannelsPerFrame *
+//                UInt32(MemoryLayout<Int16>.size)
+//            inputFormat.mBytesPerFrame = inputFormat.mChannelsPerFrame *
+//                UInt32(MemoryLayout<Int16>.size)
+//            inputFormat.mFramesPerPacket = 1
+            
             fileExtension = "m4a"
             audioFileTypeID = kAudioFileM4AType
-            inputFormat.mFormatID = kAudioFormatLinearPCM
-            inputFormat.mSampleRate = outputFormat.mSampleRate
-            inputFormat.mFormatFlags = kAudioFormatFlagIsPacked |
-                kAudioFormatFlagIsSignedInteger |
-                kAudioFormatFlagIsBigEndian
-            inputFormat.mBitsPerChannel = UInt32(8 * MemoryLayout<Int16>.size)
-            inputFormat.mChannelsPerFrame = outputFormat.mChannelsPerFrame
-            inputFormat.mBytesPerPacket = inputFormat.mChannelsPerFrame *
-                UInt32(MemoryLayout<Int16>.size)
-            inputFormat.mBytesPerFrame = inputFormat.mChannelsPerFrame *
-                UInt32(MemoryLayout<Int16>.size)
-            inputFormat.mFramesPerPacket = 1
         default:
             return nil
         }
