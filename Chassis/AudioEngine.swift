@@ -755,20 +755,18 @@ public class AudioEngine: EngineConnectable {
                 return nil
             }
 
+            var infoSize: UInt32 = UInt32(MemoryLayout<AudioStreamBasicDescription>.size)
+            
+            if CheckError(ExtAudioFileGetProperty(unwrappedInputFile,
+                                                  kExtAudioFileProperty_FileDataFormat,
+                                                  &infoSize,
+                                                  &inputFormat),
+                          "ExtAudioFileGetProperty failed") != noErr {
+                return nil
+            }
+            
             fileExtension = "m4a"
             audioFileTypeID = kAudioFileM4AType
-            inputFormat.mFormatID = kAudioFormatLinearPCM
-            inputFormat.mSampleRate = outputFormat.mSampleRate
-            inputFormat.mFormatFlags = kAudioFormatFlagIsPacked |
-                kAudioFormatFlagIsSignedInteger |
-                kAudioFormatFlagIsBigEndian
-            inputFormat.mBitsPerChannel = UInt32(8 * MemoryLayout<Int16>.size)
-            inputFormat.mChannelsPerFrame = outputFormat.mChannelsPerFrame
-            inputFormat.mBytesPerPacket = inputFormat.mChannelsPerFrame *
-                UInt32(MemoryLayout<Int16>.size)
-            inputFormat.mBytesPerFrame = inputFormat.mChannelsPerFrame *
-                UInt32(MemoryLayout<Int16>.size)
-            inputFormat.mFramesPerPacket = 1
         default:
             return nil
         }
@@ -784,42 +782,32 @@ public class AudioEngine: EngineConnectable {
             return nil
         }
 
-        if CheckError(ExtAudioFileSetProperty(unwrappedInputFile,
-                                               kExtAudioFileProperty_ClientDataFormat,
-                                               UInt32(MemoryLayout<AudioStreamBasicDescription>.size),
-                                               &inputFormat),
-                       "ExtAudioFileSetProperty failed") != noErr {
-            return nil
-        }
-
         guard let unwrappedOutputFile = outputFile else { return nil }
+        
         if CheckError(ExtAudioFileSetProperty(unwrappedOutputFile,
                                                kExtAudioFileProperty_ClientDataFormat,
                                                UInt32(MemoryLayout<AudioStreamBasicDescription>.size),
                                                &inputFormat),
-                       "ExtAudioFileSetProperty failed") != noErr {
+                       "ExtAudioFileSetProperty failed on output file") != noErr {
             return nil
         }
-
-        if let unwrappedInputFile = inputFile,
-            let unwrappedOutputFile = outputFile {
-            if CheckError(convert(outputFormat: outputFormat,
-                                   inputFile: unwrappedInputFile,
-                                   outputFile: unwrappedOutputFile),
-                           "Convert failed") != noErr {
-                return nil
-            }
-            ExtAudioFileDispose(unwrappedInputFile)
-            ExtAudioFileDispose(unwrappedOutputFile)
-        } else {
+        
+        if CheckError(convert(outputFormat: outputFormat,
+                               inputFile: unwrappedInputFile,
+                               outputFile: unwrappedOutputFile),
+                       "Convert failed") != noErr {
             return nil
         }
+        ExtAudioFileDispose(unwrappedInputFile)
+        ExtAudioFileDispose(unwrappedOutputFile)
+        
         return outputFileURL as URL
     }
 
     private func convert(outputFormat: AudioStreamBasicDescription,
                          inputFile: ExtAudioFileRef,
                          outputFile: ExtAudioFileRef) -> OSStatus {
+        print("Converting to \(outputFormat.mSampleRate)Hz, \(outputFormat.mBitsPerChannel) bits")
         let outputBufferSize = 32 * 1024
         let framesPerBuffer = UInt32(outputBufferSize / MemoryLayout<UInt32>.size)
 
