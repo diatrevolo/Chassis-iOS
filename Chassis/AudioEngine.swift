@@ -53,6 +53,10 @@ public protocol EngineConnectable: class {
     func bounceScene(filename: String) -> URL?
     func convertFile(filepath: URL,
                      to format: CommonFormats) -> URL?
+    func changeVolume(to value: Float, track: Track)
+    func changePan(to value: Float, track: Track)
+    func getVolume(for track: Track) -> Float
+    func getPan(for track:Track) -> Float
 }
 
 // swiftlint:disable type_body_length
@@ -843,6 +847,96 @@ public class AudioEngine: EngineConnectable {
                 return err
             }
         }
+    }
+    
+    public func changeVolume(to value: Float, track: Track) {
+        if let token = track.token {
+            let selectedNode = tokenizedFiles[token]?.node
+            selectedNode?.volume = value
+        } else {
+            guard let file = try? loadTrack(track) else { fatalError("Track is not valid.") }
+            let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+            let audioTime = AVAudioTime(sampleTime: Int64(getMixLength() *
+                                                      (track.startTime ?? 0) * sampleRate),
+                                    atRate: sampleRate)
+        
+            let matchingTracks = legacyFiles.filter {
+                $0.url == file.url && $1 == audioTime
+            }.enumerated()
+            
+            for trackCandidate in matchingTracks {
+                let selectedNode = legacyNodes[trackCandidate.offset]
+                selectedNode.volume = value
+            }
+        }
+    }
+    
+    public func changePan(to value: Float, track: Track) {
+        if let token = track.token {
+            let selectedNode = tokenizedFiles[token]?.node
+            selectedNode?.pan = value
+        } else {
+            guard let file = try? loadTrack(track) else { fatalError("Track is not valid.") }
+            let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+            let audioTime = AVAudioTime(sampleTime: Int64(getMixLength() *
+                                                      (track.startTime ?? 0) * sampleRate),
+                                    atRate: sampleRate)
+        
+            let matchingTracks = legacyFiles.filter {
+                $0.url == file.url && $1 == audioTime
+            }.enumerated()
+            
+            for trackCandidate in matchingTracks {
+                let selectedNode = legacyNodes[trackCandidate.offset]
+                selectedNode.pan = value
+            }
+        }
+    }
+    
+    public func getVolume(for track: Track) -> Float {
+        if let token = track.token {
+            let selectedNode = tokenizedFiles[token]?.node
+            return selectedNode?.volume ?? 0.0
+        } else {
+            guard let file = try? loadTrack(track) else { fatalError("Track is not valid.") }
+            let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+            let audioTime = AVAudioTime(sampleTime: Int64(getMixLength() *
+                                                      (track.startTime ?? 0) * sampleRate),
+                                    atRate: sampleRate)
+        
+            let matchingTracks = legacyFiles.filter {
+                $0.url == file.url && $1 == audioTime
+            }.enumerated()
+            
+            for trackCandidate in matchingTracks {
+                let selectedNode = legacyNodes[trackCandidate.offset]
+                return selectedNode.volume
+            }
+        }
+        return 1.0
+    }
+    
+    public func getPan(for track: Track) -> Float {
+        if let token = track.token {
+            let selectedNode = tokenizedFiles[token]?.node
+            return selectedNode?.pan ?? 0.5
+        } else {
+            guard let file = try? loadTrack(track) else { fatalError("Track is not valid.") }
+            let sampleRate = engine.outputNode.outputFormat(forBus: 0).sampleRate
+            let audioTime = AVAudioTime(sampleTime: Int64(getMixLength() *
+                                                      (track.startTime ?? 0) * sampleRate),
+                                    atRate: sampleRate)
+        
+            let matchingTracks = legacyFiles.filter {
+                $0.url == file.url && $1 == audioTime
+            }.enumerated()
+            
+            for trackCandidate in matchingTracks {
+                let selectedNode = legacyNodes[trackCandidate.offset]
+                return selectedNode.pan
+            }
+        }
+        return 0.0
     }
 }
 
