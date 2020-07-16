@@ -913,7 +913,7 @@ public class AudioEngine: EngineConnectable {
                 return selectedNode.volume
             }
         }
-        return 0.0
+        return 1.0
     }
     
     public func getPan(for track: Track) -> Float {
@@ -936,7 +936,7 @@ public class AudioEngine: EngineConnectable {
                 return selectedNode.pan
             }
         }
-        return 0.5
+        return 0.0
     }
 }
 
