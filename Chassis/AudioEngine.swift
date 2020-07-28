@@ -521,6 +521,9 @@ public class AudioEngine: EngineConnectable {
         legacyNodes.forEach {
             unloadNode($0)
         }
+        nodes.forEach {
+            $0.inUse = false
+        }
     }
 
     /**
