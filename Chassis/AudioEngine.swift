@@ -402,7 +402,24 @@ public class AudioEngine: EngineConnectable {
     }
 
     public func scrub(to interval: TimeInterval) {
-        //
+        guard let updater = self.updater else { return }
+        guard let audioFormat = audioFormat else { return }
+        stop()
+        let beginningSample = interval * audioFormat.sampleRate
+        let mixLengthInSamples = getMixLength() * audioFormat.sampleRate
+        let frameInSamples = mixLengthInSamples - beginningSample
+
+        updater.isPaused = false
+        self.nodes.forEach {
+            if $0.inUse {
+                for (_, fileInfo) in tokenizedFiles {
+                    if fileInfo.node == $0.node {
+                        $0.node.scheduleSegment(fileInfo.file, startingFrame: AVAudioFramePosition(beginningSample), frameCount: AVAudioFrameCount(frameInSamples), at: nil, completionHandler: nil)
+                    }
+                }
+            }
+        }
+        play()
     }
 
     public func skipForward() {
@@ -954,7 +971,7 @@ public enum CommonFormats {
 
 public class Track: NSObject {
     public let fileURLString: String
-    public let startTime: Double?
+    public var startTime: Double?
     public let token: UUID?
 
     public init(urlString: String, startTime: Double? = nil, token: Int? = nil) {
